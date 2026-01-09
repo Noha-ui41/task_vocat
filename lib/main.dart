@@ -1,122 +1,201 @@
-import 'package:flutter/material.dart';
+
+// ABSTRACT CLASS
+abstract class LibraryItem {
+  String title;
+  String id;
+
+  LibraryItem(this.title, this.id);
+
+  void displayInfo(); // must be implemented
+}
+
+// INTERFACE
+abstract class Borrowable {
+  void borrow();
+  void returnItem();
+}
+
+// BOOK CLASS
+class Book extends LibraryItem implements Borrowable {
+  String author;
+  bool _isAvailable = true;
+
+  Book(super.title, super.id, this.author);
+
+  // Getter
+  bool get isAvailable => _isAvailable;
+
+  // Setter
+  set isAvailable(bool value) {
+    _isAvailable = value;
+  }
+
+  @override
+  void borrow() {
+    if (_isAvailable) {
+      _isAvailable = false;
+      print("Book borrowed successfully");
+    } else {
+      print("Book is not available");
+    }
+  }
+
+  @override
+  void returnItem() {
+    _isAvailable = true;
+    print("Book returned successfully");
+  }
+
+  // Method Overloading (using optional parameters)
+  void displayBookInfo({
+    bool showAuthor = false,
+    bool showAll = false,
+  }) {
+    if (showAll) {
+      print("Title: $title, Author: $author, Available: $_isAvailable");
+    } else if (showAuthor) {
+      print("Title: $title, Author: $author");
+    } else {
+      print("Title: $title");
+    }
+  }
+
+  @override
+  void displayInfo() {
+    displayBookInfo(showAll: true);
+  }
+}
+
+// MAGAZINE CLASS
+class Magazine extends LibraryItem {
+  int issueNumber;
+
+  Magazine(super.title, super.id, this.issueNumber);
+
+  @override
+  void displayInfo() {
+    print("Magazine: $title, Issue: $issueNumber");
+  }
+}
+
+// MEMBER CLASS
+class Member {
+  String name;
+  String memberId;
+
+  Member(this.name, this.memberId);
+
+  void displayMember() {
+    print("Member Name: $name, ID: $memberId");
+  }
+}
+
+// BUILDER CLASS
+class BookBuilder {
+  String? _title;
+  String? _id;
+  String? _author;
+
+  BookBuilder setTitle(String title) {
+    _title = title;
+    return this;
+  }
+
+  BookBuilder setId(String id) {
+    _id = id;
+    return this;
+  }
+
+  BookBuilder setAuthor(String author) {
+    _author = author;
+    return this;
+  }
+
+  Book build() {
+    return Book(_title!, _id!, _author!);
+  }
+}
+
+// CALLABLE CLASS
+class BookSearch {
+  List<Book> books;
+
+  BookSearch(this.books);
+
+  Book? call(String title) {
+    for (var book in books) {
+      if (book.title.toLowerCase() == title.toLowerCase()) {
+        return book;
+      }
+    }
+    return null;
+  }
+}
+
+// LIBRARY MANAGEMENT
+class Library {
+  List<Book> books = [];
+  List<Member> members = [];
+
+  void addBook(Book book) {
+    books.add(book);
+  }
+
+  void addMember(Member member) {
+    members.add(member);
+  }
+
+  void displayBooks() {
+    for (var book in books) {
+      book.displayInfo();
+    }
+  }
+
+  void displayMembers() {
+    for (var member in members) {
+      member.displayMember();
+    }
+  }
+}
+
 
 void main() {
-  runApp(const MyApp());
-}
+  Library library = Library();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  // Create book using Builder
+  Book book1 = BookBuilder()
+      .setTitle("Clean Code")
+      .setId("B1")
+      .setAuthor("Robert C. Martin")
+      .build();
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+  Member member1 = Member("Noha", "M1");
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  library.addBook(book1);
+  library.addMember(member1);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+  print("=== Library Books ===");
+  library.displayBooks();
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  print("\n=== Library Members ===");
+  library.displayMembers();
 
-  final String title;
+  print("\n=== Borrow & Return ===");
+  book1.borrow();
+  book1.returnItem();
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  print("\n=== Display Book Info ===");
+  book1.displayBookInfo();
+  book1.displayBookInfo(showAuthor: true);
+  book1.displayBookInfo(showAll: true);
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  print("\n=== Search Book ===");
+  BookSearch search = BookSearch(library.books);
+  Book? foundBook = search("Clean Code");
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+  if (foundBook != null) {
+    print("Book Found: ${foundBook.title}");
+  } else {
+    print("Book not found");
   }
 }
